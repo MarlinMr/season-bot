@@ -1,0 +1,6 @@
+site_name: Seasonal bot
+site_description: Seasonal bot reference guide
+theme:
+    name: readthedocs
+site_dir: public
+site_url: https://marlinmr.github.io/seasonal-bot
