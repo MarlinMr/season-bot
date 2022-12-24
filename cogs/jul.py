@@ -3,6 +3,9 @@ import logging
 import json
 from discord.ext import commands
 from random import random
+import random
+import datetime
+import time
 
 
 FORMAT = '%(asctime)s %(message)s'
@@ -64,7 +67,44 @@ class jul(commands.Cog):
     async def tagave(self, ctx):
         """Gir gave til de snille barna"""
         logging.info(f"From `{ctx.message.author}` `{ctx.message.content}` in `{ctx.message.channel}`")
-        await ctx.send("🎅: HoHo! Ingen gaver før julaften!")
+        #current_time = datetime.datetime.now(datetime.timezone.utc).astimezone(datetime.timezone(datetime.timedelta(hours=2)))
+
+        #if current_time < datetime.datetime(year=current_time.year, month=12, day=24, hour=20, minute=0):
+
+        if time.time() < 1671904800:
+            await ctx.send("Det er ikkje tid for å motta gåver enno. Prøv igjen den 24. desember klokka 2000.")
+            return
+
+        with open('./jul/gaveliste.json', 'r') as f:
+            data = json.load(f)
+            gifts = data['gaver']
+            user_gifts = data.get('user_gifts', {})
+            snille = data['snille']
+            slemme = data['slemme']
+
+        if str(ctx.message.author.id) in snille:
+            if str(ctx.message.author.id) in user_gifts:
+                await ctx.send(f'Du har allereie mottatt gåva: {user_gifts[str(ctx.message.author.id)]}')
+                return
+
+            gift = random.choice(gifts)
+            gifts.remove(gift)
+            user_gifts[ctx.message.author.id] = gift
+            with open('./jul/gaveliste.json', 'w') as f:
+                data['gaver'] = gifts
+                data['user_gifts'] = user_gifts
+                json.dump(data, f)
+
+            await ctx.send(f'Gåva di er: {gift}')
+        elif str(ctx.message.author.id) in slemme:
+            user_gifts[ctx.message.author.id] = 'coal'
+            with open('./jul/gaveliste.json', 'w') as f:
+                data['user_gifts'] = user_gifts
+                json.dump(data, f)
+
+            await ctx.send("Du har vore slem i år og vil motta kol i staden for gåva. Brenn ikkje kol på grunn av klimaendringar.")
+        else:
+            await ctx.send("Du er ikkje i snille- eller slemme-lista. Gje ein gåve med €gigave for å komme på lista.")
 
     @commands.command()
     async def tos(self,ctx):
